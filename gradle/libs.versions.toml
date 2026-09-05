@@ -1,0 +1,63 @@
+# ------------------------------------------------------------------------------------------------ #
+[versions]
+jetbrains-compose = "1.10.3"
+jetbrains-coroutines = "1.11.0"
+jetbrains-serialization = "1.11.0"
+androidx-datastore = "1.2.1"
+arch-lumber = "1.1.0"
+## --- Plugins and more general stuff --- ##
+#noinspection UnusedVersionCatalogEntry
+jacoco = "0.8.14"
+detekt = "2.0.0-alpha.6"
+
+## --- Build Config and SDK --- ##
+build-sdk-min = "20"
+build-sdk-compile = "37"
+build-tools = "37.0.0"
+
+## JetBrains
+jetbrains-kotlin = "2.4.10"
+jetbrains-atomic = "0.33.0"
+jetbrains-dokka = "2.2.0"
+jetbrains-kover = "0.9.9"
+
+## AndroidX
+androidx-plugin = "9.4.0"
+
+## Tools
+ktlint = "14.2.0"
+vanniktech-publish = "0.37.0"
+
+# ------------------------------------------------------------------------------------------------ #
+[libraries]
+jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose" }
+jetbrains-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "jetbrains-coroutines" }
+jetbrains-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "jetbrains-coroutines" }
+jetbrains-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "jetbrains-serialization" }
+androidx-datastore-core = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
+arch-lumber = { module = "io.github.matheus-corregiari:arch-lumber", version.ref = "arch-lumber" }
+## JetBrains
+jetbrains-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "jetbrains-dokka" }
+jetbrains-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "jetbrains-kotlin" }
+jetbrains-multiplatform = { module = "org.jetbrains.kotlin.multiplatform:org.jetbrains.kotlin.multiplatform.gradle.plugin", version.ref = "jetbrains-kotlin" }
+jetbrains-kover = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "jetbrains-kover" }
+jetbrains-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "jetbrains-kotlin" }
+
+## Androidx
+androidx-library = { module = "com.android.kotlin.multiplatform.library:com.android.kotlin.multiplatform.library.gradle.plugin", version.ref = "androidx-plugin" }
+
+## Tools
+detekt = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+ktlint = { module = "org.jlleitschuh.gradle.ktlint:org.jlleitschuh.gradle.ktlint.gradle.plugin", version.ref = "ktlint" }
+vanniktech-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktech-publish" }
+
+# ------------------------------------------------------------------------------------------------ #
+[plugins]
+jetbrains-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "jetbrains-kotlin" }
+jetbrains-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "jetbrains-kotlin" }
+jetbrains-atomic = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "jetbrains-atomic" }
+
+# ------------------------------------------------------------------------------------------------ #
+[bundles]
+## Nothing Here Yet!

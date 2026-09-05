@@ -1,0 +1,130 @@
+config:
+  validation: false
+  warningsAsErrors: false
+  excludes: [ ]
+
+complexity:
+  LongMethod:
+    active: true
+    allowedLines: 60
+  LongParameterList:
+    active: true
+    allowedFunctionParameters: 7
+    allowedConstructorParameters: 8
+    ignoreDataClasses: true
+  CyclomaticComplexMethod:
+    active: true
+    allowedComplexity: 14
+    ignoreSingleWhenExpression: false
+    ignoreSimpleWhenEntries: false
+    ignoreNestingFunctions: false
+    nestingFunctions:
+      - also
+      - apply
+      - forEach
+      - let
+      - run
+      - use
+      - with
+  ComplexCondition:
+    active: true
+    allowedConditions: 3
+  NestedBlockDepth:
+    active: true
+    allowedDepth: 4
+  LargeClass:
+    active: true
+    allowedLines: 600
+  TooManyFunctions:
+    active: true
+    excludes:
+      - '**/test/**'
+      - '**/*Test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+    allowedFunctionsPerFile: 11
+    allowedFunctionsPerClass: 11
+    allowedFunctionsPerInterface: 11
+    allowedFunctionsPerObject: 11
+    allowedFunctionsPerEnum: 11
+
+naming:
+  FunctionNaming:
+    active: true
+    excludes:
+      - '**/test/**'
+      - '**/*Test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][_A-Z0-9]*'
+    propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
+    privatePropertyPattern: '_?[A-Za-z][_A-Za-z0-9]*'
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true
+    excludes:
+      - '**/test/**'
+      - '**/*Test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+
+style:
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'Forbidden FIXME todo marker in comment, please fix the problem.'
+        value: 'FIXME:'
+      - reason: 'Forbidden STOPSHIP todo marker in comment, please address the problem before shipping the code.'
+        value: 'STOPSHIP:'
+      - reason: 'Forbidden TODO todo marker in comment, please do the changes.'
+        value: 'TODO:'
+  MagicNumber:
+    active: true
+    excludes:
+      - '**/test/**'
+      - '**/*Test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      - '**/*.kts'
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+    ignoreHashCodeFunction: true
+    ignoreConstantDeclaration: true
+    ignoreNamedArgument: true
+    ignoreExtensionFunctions: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 150
+    excludePackageStatements: true
+    excludeImportStatements: true
+    excludeCommentStatements: false
+    excludeRawStrings: true
+  NewLineAtEndOfFile:
+    active: true

@@ -1,0 +1,24 @@
+**/build
+**/.kotlin/
+**/.gradle/
+**/.idea/
+**/.git/
+**/site/
+/.codex/
+**/kotlin-js-store/
+*.log
+*.iml
+/local.properties
+/docs/api/
+/docs/contributing.md
+.DS_Store
+/captures
+.externalNativeBuild
+# Added by code-review-graph
+.code-review-graph/
+
+.github/scripts/__pycache__/
+
+!/kotlin-js-store/
+/kotlin-js-store/*
+!/kotlin-js-store/yarn.lock
