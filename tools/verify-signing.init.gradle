@@ -1,0 +1,17 @@
+// Use only with --dry-run. Evaluates real Sign predicates without executing any task actions.
+gradle.taskGraph.whenReady { graph ->
+    if (gradle.rootProject.name == 'arch-storage') {
+        if (!gradle.startParameter.dryRun) {
+            throw new GradleException('Signing verification requires --dry-run')
+        }
+        def expected = gradle.startParameter.projectProperties['expectSigning'] == 'true'
+        def signatures = graph.allTasks.findAll { it instanceof org.gradle.plugins.signing.Sign }
+        if (signatures.empty) throw new GradleException('No signing tasks found')
+        signatures.each { task ->
+            if (task.onlyIf.isSatisfiedBy(task) != expected) {
+                throw new GradleException("Unexpected signing policy: ${task.path}")
+            }
+        }
+        println("Verified ${signatures.size()} signing predicates: required=${expected}")
+    }
+}

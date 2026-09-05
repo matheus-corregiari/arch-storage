@@ -61,11 +61,16 @@ extensions.configure(MavenPublishBaseExtension::class) {
 
 tasks.withType<Sign>().configureEach {
     onlyIf {
-        val localPublish = gradle.taskGraph.allTasks.any {
-            it.name == "ciPublishLocal" ||
-                it.name == "publishToMavenLocal" ||
-                it.name.endsWith("ToMavenLocal")
+        val remotePublish = gradle.taskGraph.allTasks.any {
+            (it is org.gradle.api.publish.maven.tasks.PublishToMavenRepository &&
+                it.repository.url.scheme != "file") ||
+                it.name.contains("MavenCentral")
         }
-        !localPublish
+        val localPublish = gradle.taskGraph.allTasks.any {
+            it is org.gradle.api.publish.maven.tasks.PublishToMavenLocal ||
+                (it is org.gradle.api.publish.maven.tasks.PublishToMavenRepository &&
+                    it.repository.url.scheme == "file")
+        }
+        remotePublish || !localPublish
     }
 }

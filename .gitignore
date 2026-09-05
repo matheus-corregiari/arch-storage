@@ -18,6 +18,7 @@
 .code-review-graph/
 
 .github/scripts/__pycache__/
+/tools/__pycache__/
 
 !/kotlin-js-store/
 /kotlin-js-store/*
