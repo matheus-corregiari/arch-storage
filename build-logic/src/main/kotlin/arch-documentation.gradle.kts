@@ -23,6 +23,7 @@ extensions.configure(DokkaExtension::class) {
     moduleVersion.set(project.versionName)
     basePublicationsDirectory.set(file("$rootDir/docs/api/${project.name}"))
     dokkaPublications.getByName("html").outputDirectory = basePublicationsDirectory
+    dokkaPublications.configureEach { failOnWarning.set(true) }
 
     dokkaSourceSets.configureEach {
         reportUndocumented.set(true)
@@ -40,13 +41,13 @@ extensions.configure(KoverProjectExtension::class) {
         total {
             verify {
                 rule("Minimum line coverage") {
-                    minBound(65, CoverageUnit.LINE)
+                    minBound(providers.gradleProperty("ci.coverage.lines").get().toInt(), CoverageUnit.LINE)
                 }
                 rule("Minimum instruction coverage") {
-                    minBound(65, CoverageUnit.INSTRUCTION)
+                    minBound(providers.gradleProperty("ci.coverage.instructions").get().toInt(), CoverageUnit.INSTRUCTION)
                 }
                 rule("Minimum branch coverage") {
-                    minBound(65, CoverageUnit.BRANCH)
+                    minBound(providers.gradleProperty("ci.coverage.branches").get().toInt(), CoverageUnit.BRANCH)
                 }
             }
         }
