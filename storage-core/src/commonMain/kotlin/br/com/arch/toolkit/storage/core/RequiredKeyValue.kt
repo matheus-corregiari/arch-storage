@@ -3,8 +3,6 @@ package br.com.arch.toolkit.storage.core
 import br.com.arch.toolkit.storage.core.KeyValue.Companion.required
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A [KeyValue] adapter that enforces non-null values.
@@ -18,7 +16,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * ### Behavior
  * - **Read:** If the underlying [KeyValue] has no value, [default] is invoked (if provided).
  *   If both are missing, an [IllegalStateException] is thrown.
- * - **Write:** Null assignments are rejected with an [IllegalStateException].
+ * - **Write:** Non-null entry types reject null assignments at compile time.
  * - **Flow:** [get] supplies the fallback or fails when a required value is absent.
  *
  * ---
@@ -32,7 +30,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * println("Counter is ${counter.instant()}")
  *
  * counter.set(5) // ✅ works
- * counter.set(null) // ❌ throws IllegalStateException
+ * // counter.set(null) does not compile for KeyValue<Int>.
  * ```
  *
  * ### Example: Without default
@@ -68,11 +66,11 @@ internal class RequiredKeyValue<ResultData> internal constructor(
 
     override fun get() = keyValue.get().mapNotNull {
         it
-            ?: withTimeoutOrNull(50.milliseconds) { default?.invokeCatching() }
+            ?: default?.invokeCatching()
             ?: error("Required KeyValue does not have value")
     }
 
     override fun set(value: ResultData, scope: CoroutineScope) = keyValue.set(value, scope)
 
-    private fun <R> (() -> R).invokeCatching() = runCatching { invoke() }.getOrNull()
+    private fun <R> (() -> R).invokeCatching() = catchingStorageFailure { invoke() }.getOrNull()
 }

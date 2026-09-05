@@ -25,9 +25,9 @@ import kotlinx.coroutines.flow.map
  * val themePref: KeyValue<String?> = storageProvider.string("theme")
  *
  * val theme: KeyValue<Theme> = themePref
- *     .required { Theme.Light }
+ *     .required { "Light" }
  *     .map(
- *         mapTo = { value -> Theme.valueOf(value ?: "Light") },
+ *         mapTo = { value -> Theme.valueOf(value) },
  *         mapBack = { it.name }
  *     )
  *
@@ -61,5 +61,5 @@ internal class MapKeyValue<Current, Transformed> internal constructor(
         mapBack.invokeCatching(value).onSuccess { keyValue.set(it, scope) }
     }
 
-    private fun <T, R> ((T) -> R).invokeCatching(data: T) = runCatching { invoke(data) }
+    private fun <T, R> ((T) -> R).invokeCatching(data: T) = catchingStorageFailure { invoke(data) }
 }

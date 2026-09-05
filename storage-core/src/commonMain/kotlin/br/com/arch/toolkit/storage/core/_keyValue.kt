@@ -4,19 +4,18 @@ package br.com.arch.toolkit.storage.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import br.com.arch.toolkit.storage.core.KeyValue.Companion.map
 import br.com.arch.toolkit.storage.core.KeyValue.Companion.required
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.timeout
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.time.Duration.Companion.milliseconds
@@ -146,23 +145,35 @@ abstract class KeyValue<DATA> {
     /** Sets the default write scope and returns this entry. */
     fun scope(scope: CoroutineScope) = apply { this.scope = scope }
 
-    /** Reads the first value within 50 ms, falling back to [lastValue] on timeout or failure. */
-    @OptIn(FlowPreview::class)
-    suspend fun current(): DATA = runCatching {
-        get().timeout(50.milliseconds).catch { emit(lastValue) }.firstOrNull()
-    }.getOrNull() ?: lastValue
+    /**
+     * Reads the first emission, including null, within 50 ms of cooperative suspension.
+     * Empty flows, timeout and ordinary failures fall back to [lastValue]; cancellation propagates.
+     * Blocking synchronous work cannot be interrupted by this timeout.
+     */
+    suspend fun current(): DATA {
+        val emission = catchingStorageFailure {
+            withTimeoutOrNull(50.milliseconds) { get().map { Value(it) }.firstOrNull() }
+        }.getOrNull()
+        return if (emission == null) lastValue else emission.value
+    }
 
     /** Collects this entry as Compose state. Assignments write through using [scope]. */
     @Composable
     fun state(scope: CoroutineScope = this.scope): MutableState<DATA> {
-        val current by get().collectAsState(lastValue)
-        return remember(current, scope) {
-            mutableStateOf(
-                value = current,
-                policy = object : SnapshotMutationPolicy<DATA> {
-                    override fun equivalent(a: DATA, b: DATA) = (a == b).also { set(b, scope) }
-                }
-            )
+        val observed = remember(this) { get() }
+        val current by observed.collectAsState(lastValue)
+        return remember(this, current, scope) {
+            object : MutableState<DATA> {
+                private val local = mutableStateOf(current)
+                override var value: DATA
+                    get() = local.value
+                    set(value) {
+                        local.value = value
+                        set(value, scope)
+                    }
+                override fun component1(): DATA = value
+                override fun component2(): (DATA) -> Unit = { value = it }
+            }
         }
     }
 
@@ -205,3 +216,8 @@ abstract class KeyValue<DATA> {
         )
     }
 }
+
+private class Value<T>(val value: T)
+
+internal inline fun <T> catchingStorageFailure(block: () -> T): Result<T> =
+    runCatching(block).onFailure { if (it is CancellationException) throw it }
