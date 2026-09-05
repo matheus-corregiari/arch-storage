@@ -2,15 +2,15 @@
 
 ## Dependencies
 
-For local consumption, run `./gradlew ciPublishLocal`. The development version defaults to
-`0.0.0-SNAPSHOT`; configure `mavenLocal()` in the consuming project's repositories.
-An independent public release has not been selected or published yet.
+For candidate consumption, run `./gradlew ciPublishLocal -PreleaseVersion=1.0.0` and configure
+`mavenLocal()` in the consuming project's repositories. `1.0.0` is selected but not published yet.
+After publication, use Maven Central. Read the [RC migration guide](migration-1.0.0.md) for version conflicts.
 
 ```kotlin
 kotlin {
     sourceSets.commonMain.dependencies {
-        implementation("io.github.matheus-corregiari:storage-memory:0.0.0-SNAPSHOT")
-        implementation("io.github.matheus-corregiari:storage-datastore:0.0.0-SNAPSHOT")
+        implementation("io.github.matheus-corregiari:storage-memory:1.0.0")
+        implementation("io.github.matheus-corregiari:storage-datastore:1.0.0")
     }
 }
 ```

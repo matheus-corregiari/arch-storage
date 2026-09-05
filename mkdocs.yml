@@ -34,6 +34,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Migration to 1.0.0: migration-1.0.0.md
   - Core Concepts: core-concepts.md
   - Usage Recipes: recipes.md
   - Ecosystem: ecosystem.md

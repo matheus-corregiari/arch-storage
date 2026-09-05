@@ -17,6 +17,9 @@ plus enum and model helpers. `KeyValue<T>` exposes `get(): Flow<T>`, `set(value,
 
 `current()` and `instant()` are convenience reads, not persistence acknowledgements. Avoid blocking
 reads on UI threads. Use a caller-owned scope and Flow for lifecycle-sensitive work.
+Cancellation propagates. A valid null emission replaces stale cache; only an absent emission,
+ordinary failure or timeout uses the fallback. The timeout is cooperative and cannot interrupt
+blocking synchronous code.
 DataStore cancels the previous pending write on the same entry when another write is submitted;
 do not use repeated `set` calls as an atomic increment or transaction API.
 
@@ -36,6 +39,8 @@ import br.com.arch.toolkit.storage.core.KeyValue.Companion.required
 Defaults do not persist themselves. `default` preserves nullable values and emits null when
 both source and fallback are null. `required()` without a default fails when the value is absent;
 `required { value }` supplies a non-null fallback. A throwing fallback is treated as unavailable.
+Cancellation is the exception: it propagates. Synchronous default suppliers have no interrupting
+timeout. `KeyValue<Int>.set(null)` does not compile.
 
 ## Bidirectional mapping
 
@@ -55,3 +60,13 @@ fall back to the supplied enum value for an unknown name.
 Pass `json = ...` per model when possible. `StorageProvider.json(...)` changes the global default
 for subsequent model entries. Its initial configuration ignores unknown keys, encodes defaults and
 pretty-prints JSON. Storage provides no encryption layer.
+
+## Compose and concurrency
+
+`entry.state(scope)` observes one remembered Flow per entry. Replacing the entry or scope redirects
+subsequent assignments; disposing the composition stops collection. Assignments update local state
+and schedule the backend write. Snapshot application and equality comparisons do not write again.
+
+DataStore cache visibility is protected across threads, and pending jobs are replaced atomically per
+entry instance. An edit must complete successfully before its value is cached. Distinct entries for
+the same key remain independent writers; this is not a transaction or a compare-and-set API.
