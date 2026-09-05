@@ -1,5 +1,5 @@
 val repositoryList: RepositoryHandler.() -> Unit = {
-    mavenLocal()
+    if (providers.gradleProperty("useMavenLocal").orNull == "true") mavenLocal()
     google()
     mavenCentral()
     gradlePluginPortal()
