@@ -1,7 +1,6 @@
 package br.com.arch.toolkit.storage.datastore
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.byteArrayPreferencesKey
@@ -20,9 +19,12 @@ import br.com.arch.toolkit.storage.datastore.DataStoreKeyValue.FloatKV
 import br.com.arch.toolkit.storage.datastore.DataStoreKeyValue.IntKV
 import br.com.arch.toolkit.storage.datastore.DataStoreKeyValue.LongKV
 import br.com.arch.toolkit.storage.datastore.DataStoreKeyValue.StringKV
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.concurrent.atomics.AtomicReference
@@ -40,7 +42,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
  * - **Read:** Values are exposed as a [Flow] via [get]. Null if the key is not set.
  * - **Write:** Updates are performed inside [DataStore.edit], replacing or removing the key.
  * - **Cache:** The last successfully read or written value is stored in [lastValue].
- * - **Concurrency:** Only one active write job is kept per key (previous is cancelled).
+ * - **Concurrency:** The latest pending write wins per entry instance (previous is cancelled).
  * - **Errors:** Failures are logged via [Lumber].
  *
  * ---
@@ -85,27 +87,34 @@ internal sealed class DataStoreKeyValue<Result>(
     private val store: DataStore<Preferences>
 ) : KeyValue<Result?>() {
 
-    override var lastValue: Result? = null
+    private val cached = AtomicReference<Result?>(null)
+    override var lastValue: Result?
+        get() = cached.load()
+        set(value) = cached.store(value)
     private val job = AtomicReference<Job>(Job().apply { complete() })
 
-    override fun get(): Flow<Result?> = store.data.map { pref -> get(pref).getOrNull() }
-
-    override fun set(value: Result?, scope: CoroutineScope) {
-        job.load().cancel()
-        job.store(scope.launch { store.edit { pref -> set(pref, value) } })
+    override fun get(): Flow<Result?> = store.data.map { preferences ->
+        preferences[key].also { lastValue = it }
+    }.catch {
+        if (it !is CancellationException) Lumber.tag("DataStore - get").error(it)
+        throw it
     }
 
-    private fun get(preferences: Preferences) = runCatching {
-        preferences[key]
-    }.onSuccess { lastValue = it }.onFailure { Lumber.tag("DataStore - get").error(it) }
-
-    private fun set(preferences: MutablePreferences, value: Result?) = runCatching {
-        if (value == null) {
-            preferences.remove(key)
-        } else {
-            preferences[key] = value
+    override fun set(value: Result?, scope: CoroutineScope) {
+        val next = scope.launch(start = CoroutineStart.LAZY) {
+            runCatching {
+                store.edit { pref ->
+                    if (value == null) pref.remove(key) else pref[key] = value
+                }
+                lastValue = value
+            }.onFailure { failure ->
+                if (failure is CancellationException) throw failure
+                Lumber.tag("DataStore - set").error(failure)
+            }
         }
-    }.onSuccess { lastValue = value }.onFailure { Lumber.tag("DataStore - set").error(it) }
+        job.exchange(next).cancel()
+        next.start()
+    }
 
     internal class BooleanKV(key: String, store: DataStore<Preferences>) :
         DataStoreKeyValue<Boolean>(key = booleanPreferencesKey(key), store = store)
