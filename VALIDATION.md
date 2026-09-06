@@ -86,3 +86,10 @@ Local repository follow-up: `ciPublishLocal` now uses the existing `LocalPath` r
 The release gate verifies local artifacts and metadata; legacy-version comparisons are not required.
 Signing dry-runs passed for all 21 tasks, both local-only and combined local/GitHub.
 The 20 Python tests and strict MkDocs validation also passed. Evidence: `build/project-path-*.log`.
+
+The concurrent-writer regression now lives in `storage-datastore/src/opTest`, shared by JVM,
+Android host tests and Apple targets. Writers use `Dispatchers.Default`; a separate test scheduler
+keeps persistence paused until pending-job replacement is checked. JVM and Android executions and
+`ciLint` passed (`build/op-concurrent-writes.log`). Against the old implementation in an isolated
+copy, the same test failed with eight active pending jobs instead of one
+(`build/op-concurrent-writes-negative.log`). Apple execution is verified by the PR CI.
