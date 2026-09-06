@@ -29,7 +29,8 @@ at `release/1.0.0`.
 | Coverage Gate | `./gradlew ciBuild ciCoverage`: assemble, tests, merged coverage verification |
 | Static Analysis | `./gradlew ciLint`: Detekt, ktlint and available Android lint tasks |
 | Docs Gate | `./gradlew ciDocs`, then `python -m mkdocs build --strict` |
-| CodeQL | `./gradlew ciCodeql`: JVM/Android compilation; also analyzes Actions and Python |
+| CodeQL (java-kotlin), CodeQL (actions), CodeQL (python) | Instrumented JVM/Android compilation and real scans |
+| CodeQL Policy | Rejects blocking security alerts after all scans complete |
 | CI Gate | Requires successful completion of every gate, including policy |
 
 `ciCoverage` already includes `ciTest`. There is no second test job. Projects with Apple targets use
@@ -91,9 +92,11 @@ complete list of Maven coordinates, without uploading packages.
 
 ## Local extraction without Git
 
-The version is read from `build/version-name.txt` (written by the CI action), then from
-`-PreleaseVersion=...`, then defaults to `0.0.0-SNAPSHOT`. No Git commands run during version lookup.
-`ciPublishLocal` writes to Maven Local and skips signing; it does not publish remotely.
+The explicit `-PreleaseVersion=...` takes precedence over `build/version-name.txt` (written by CI),
+then the version defaults to `0.0.0-SNAPSHOT`. No Git commands run during version lookup.
+`ciPublishLocal` uses the `LocalPath` repository at `build/release-repository` and skips signing only when no remote publication is requested.
+Combining local and remote tasks retains remote signing. Normal resolution uses Maven Local only
+with `-PuseMavenLocal=true`.
 All three modules must appear separately in `build/ci/publications.tsv`.
 
 The checked-in workflows are prepared configuration, not proof of a successful hosted run.

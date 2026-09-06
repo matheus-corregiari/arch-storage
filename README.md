@@ -6,8 +6,8 @@ Use the same entry API for temporary in-memory values and persistent DataStore p
 [![CI](https://github.com/matheus-corregiari/arch-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/matheus-corregiari/arch-storage/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/matheus-corregiari/arch-storage/graph/badge.svg)](https://codecov.io/gh/matheus-corregiari/arch-storage)
 
-This checkout is the initial extraction. No independent Arch Storage release has been published.
-Repository, documentation and badge URLs are prepared for the future GitHub repository.
+`1.0.0` is the first independent stable release of Arch Storage.
+See the [migration guide](docs/migration-1.0.0.md) before replacing the older `2.0.0-rc*` artifacts.
 
 ## Modules
 
@@ -40,7 +40,7 @@ Memory values do not survive process termination.
 ## Build and quality
 
 Use JDK 21, the checked-in Gradle Wrapper, and Android SDK 37/build tools 37.0.0.
-Set `ANDROID_HOME` to your SDK installation. The minimum Android API is 20.
+Set `ANDROID_HOME` to your SDK installation. The minimum Android API is 23.
 Browser tests require Chrome; Apple compilation and simulator tests require macOS and Xcode.
 
 ```sh
@@ -51,10 +51,12 @@ python -m pip install -r .github/requirements-docs.txt
 python -m mkdocs build --strict
 ```
 
-Use `gradlew.bat` in PowerShell. Coverage gates require at least 65% of lines, instructions and
-branches, both per module and in aggregate. No Git checkout or publishing credentials are needed
+Use `gradlew.bat` in PowerShell. Coverage gates require at least 90% of lines, 85% of instructions and
+80% of branches, both per module and in aggregate; modules without branches report N/A.
+No Git checkout or publishing credentials are needed
 for local build/test/docs. The local version defaults to `0.0.0-SNAPSHOT`; override with
-`-PreleaseVersion=...` or the CI-generated `build/version-name.txt`.
+`'-PreleaseVersion=1.0.0'`, which takes precedence over the CI-generated `build/version-name.txt`.
+Normal dependency resolution excludes Maven Local; enable it explicitly with `-PuseMavenLocal=true`.
 
 ## Documentation
 

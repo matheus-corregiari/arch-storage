@@ -18,9 +18,9 @@ plugins {
 extensions.configure(PublishingExtension::class) {
     repositories {
         maven {
-            val buildFile = project.rootProject.layout.buildDirectory.asFile
+            val repositoryDirectory = project.rootProject.layout.buildDirectory.dir("release-repository")
             name = "LocalPath"
-            url = uri(buildFile.get().absolutePath)
+            url = uri(repositoryDirectory.get().asFile)
         }
 
         maven {
@@ -61,11 +61,16 @@ extensions.configure(MavenPublishBaseExtension::class) {
 
 tasks.withType<Sign>().configureEach {
     onlyIf {
-        val localPublish = gradle.taskGraph.allTasks.any {
-            it.name == "ciPublishLocal" ||
-                it.name == "publishToMavenLocal" ||
-                it.name.endsWith("ToMavenLocal")
+        val remotePublish = gradle.taskGraph.allTasks.any {
+            (it is org.gradle.api.publish.maven.tasks.PublishToMavenRepository &&
+                it.repository.url.scheme != "file") ||
+                it.name.contains("MavenCentral")
         }
-        !localPublish
+        val localPublish = gradle.taskGraph.allTasks.any {
+            it is org.gradle.api.publish.maven.tasks.PublishToMavenLocal ||
+                (it is org.gradle.api.publish.maven.tasks.PublishToMavenRepository &&
+                    it.repository.url.scheme == "file")
+        }
+        remotePublish || !localPublish
     }
 }

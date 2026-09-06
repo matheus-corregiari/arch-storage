@@ -57,6 +57,12 @@ jobs:
         uses: ./.github/actions/run-gradle
         with:
           tasks: ciBuild ciCoverage
+      - name: Verify local release artifacts
+        if: needs.policy.outputs.version == '1.0.0'
+        shell: bash
+        run: |
+          ./gradlew ciPublishLocal ciPublicationManifest -PreleaseVersion=1.0.0
+          python3 tools/verify_publications.py
       - name: Save test and coverage reports
         if: always()
         uses: actions/upload-artifact@v7

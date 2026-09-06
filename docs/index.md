@@ -22,5 +22,4 @@ DataStore persistence is available on Android, JVM and iOS. Its JS/Wasm factory 
 throws `IllegalStateException`: use `MemoryStoreProvider` there for nonpersistent values.
 Native macOS artifacts are not configured. A desktop JVM application can run on macOS.
 
-This is an unreleased extraction; the prepared GitHub URLs become active when the repository
-is created. See [the changelog](changelog/index.md) for changes made during extraction.
+See [the changelog](changelog/index.md) for the changes included in each release.

@@ -1,23 +1,22 @@
 # ------------------------------------------------------------------------------------------------ #
 [versions]
-jetbrains-compose = "1.10.3"
+jetbrains-compose = "1.12.0"
 jetbrains-coroutines = "1.11.0"
 jetbrains-serialization = "1.11.0"
 androidx-datastore = "1.2.1"
-arch-lumber = "1.1.0"
+arch-lumber = "1.4.0"
 ## --- Plugins and more general stuff --- ##
 #noinspection UnusedVersionCatalogEntry
-jacoco = "0.8.14"
+jacoco = "0.8.15"
 detekt = "2.0.0-alpha.6"
 
 ## --- Build Config and SDK --- ##
-build-sdk-min = "20"
+build-sdk-min = "23"
 build-sdk-compile = "37"
 build-tools = "37.0.0"
 
 ## JetBrains
 jetbrains-kotlin = "2.4.10"
-jetbrains-atomic = "0.33.0"
 jetbrains-dokka = "2.2.0"
 jetbrains-kover = "0.9.9"
 
@@ -56,7 +55,6 @@ vanniktech-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", ve
 [plugins]
 jetbrains-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "jetbrains-kotlin" }
 jetbrains-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "jetbrains-kotlin" }
-jetbrains-atomic = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "jetbrains-atomic" }
 
 # ------------------------------------------------------------------------------------------------ #
 [bundles]

@@ -7,6 +7,38 @@ import release
 
 
 class ReleasePolicyTest(unittest.TestCase):
+    def test_skipped_registry_requires_existing_publication(self):
+        from urllib.error import HTTPError
+        with patch("release.Path.read_text", return_value="io.example\tstorage-core\t1.0.0"), \
+                patch("urllib.request.urlopen", side_effect=HTTPError("url", 404, "missing", {}, None)):
+            with self.assertRaisesRegex(ValueError, "Publication not confirmed"):
+                release.publications("github")
+
+    def test_existing_skipped_registry_is_verified_without_retry(self):
+        with patch("release.Path.read_text", return_value="io.example\tstorage-core\t1.0.0"), \
+                patch("urllib.request.urlopen") as request, patch("release.time.sleep") as sleep:
+            release.publications("github")
+            request.assert_called_once()
+            sleep.assert_not_called()
+
+    def test_publication_rejects_empty_manifest(self):
+        with patch("release.Path.read_text", return_value=""), patch("urllib.request.urlopen") as request:
+            with self.assertRaisesRegex(ValueError, "Empty publication manifest"):
+                release.publications("release-only")
+            request.assert_not_called()
+
+    def test_publication_waits_for_missing_and_running_gates(self):
+        run = {"id": 1, "head_branch": "master"}
+        for jobs in ([], [{"name": "CodeQL (java-kotlin)", "conclusion": None}]):
+            with self.subTest(jobs=jobs), \
+                    patch.dict("os.environ", {"GITHUB_REPOSITORY": "owner/repo"}), \
+                    patch("release.api", return_value={"workflow_runs": [run]}), \
+                    patch("release.pages", return_value=jobs), \
+                    patch("release.time.sleep") as sleep:
+                with self.assertRaisesRegex(ValueError, "Timed out"):
+                    release.approved("sha")
+                self.assertEqual(60, sleep.call_count)
+
     def test_release_increments(self):
         for branch in ("release/1.4.0", "release/2.0.0"):
             self.assertEqual(branch.split("/")[1], release.validate(branch, ["1.3.4"]))
@@ -67,7 +99,7 @@ class ReleasePolicyTest(unittest.TestCase):
     def test_publication_ignores_non_gate_job_failure(self):
         run = {"id": 1, "head_branch": "master", "status": "in_progress", "conclusion": None}
         required = {"Release Policy", "Coverage Gate", "Static Analysis", "Docs Gate",
-                    "CodeQL", "CI Gate", "Create Release Tag"}
+                    "CodeQL (actions)", "CodeQL (java-kotlin)", "CodeQL (python)", "CodeQL Policy", "CI Gate", "Create Release Tag"}
         jobs = [{"name": name, "conclusion": "success"} for name in required]
         jobs.append({"name": "Deploy Docs", "conclusion": "failure"})
         with patch.dict("os.environ", {"GITHUB_REPOSITORY": "owner/repo"}), \
@@ -79,7 +111,7 @@ class ReleasePolicyTest(unittest.TestCase):
         run = {"id": 1, "head_branch": "master", "status": "in_progress", "conclusion": None}
         with patch.dict("os.environ", {"GITHUB_REPOSITORY": "owner/repo"}), \
                 patch("release.api", return_value={"workflow_runs": [run]}), \
-                patch("release.pages", return_value=[{"name": "CodeQL", "conclusion": "failure"}]), \
+                patch("release.pages", return_value=[{"name": "CodeQL (java-kotlin)", "conclusion": "failure"}]), \
                 patch("release.time.sleep") as sleep:
             with self.assertRaisesRegex(ValueError, "CodeQL"):
                 release.approved("sha")

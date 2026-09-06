@@ -82,7 +82,7 @@ gradle.projectsEvaluated {
     }
     ciPublishMavenCentral.configure { dependsOn(publishable.paths("publishAndReleaseToMavenCentral")) }
     ciPublishGithubPackages.configure { dependsOn(publishable.paths("publishAllPublicationsToGithubRepository")) }
-    ciPublishLocal.configure { dependsOn(publishable.paths("publishToMavenLocal")) }
+    ciPublishLocal.configure { dependsOn(publishable.paths("publishAllPublicationsToLocalPathRepository")) }
     ciPublicationManifest.configure {
         doLast {
             val coordinates = publishable.flatMap { project ->
