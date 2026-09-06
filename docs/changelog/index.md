@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.0.0 — release candidate, not yet published
+## 1.0.0
 
-- Preserve the public storage API and artifact coordinates from `2.0.0-rc16` while preparing the
+- Preserve the public storage API and artifact coordinates from `2.0.0-rc16` in the
   first independent stable release. See [migration](../migration-1.0.0.md) for Gradle version ordering.
 - Propagate coroutine cancellation through convenience reads, defaults and mapping.
 - Preserve valid null reads over stale cache and retain cooperative 50 ms read fallback.
@@ -28,4 +28,4 @@
 - Added independent API documentation output directories for all three modules.
 - Added a local snapshot version that does not require Git.
 
-No independent release is recorded yet. Arch Lumber's historical releases do not apply to this project.
+Arch Lumber's historical releases do not apply to this project.

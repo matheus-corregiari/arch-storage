@@ -6,7 +6,7 @@ Use the same entry API for temporary in-memory values and persistent DataStore p
 [![CI](https://github.com/matheus-corregiari/arch-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/matheus-corregiari/arch-storage/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/matheus-corregiari/arch-storage/graph/badge.svg)](https://codecov.io/gh/matheus-corregiari/arch-storage)
 
-This checkout prepares the first independent stable release, `1.0.0`; it is not published yet.
+`1.0.0` is the first independent stable release of Arch Storage.
 See the [migration guide](docs/migration-1.0.0.md) before replacing the older `2.0.0-rc*` artifacts.
 
 ## Modules

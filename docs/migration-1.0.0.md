@@ -1,8 +1,8 @@
 # Migrating from 2.0.0-rc16 to 1.0.0
 
-`1.0.0` is the first stable release prepared in the independent Arch Storage repository.
+`1.0.0` is the first stable release in the independent Arch Storage repository.
 The coordinates remain `io.github.matheus-corregiari:storage-*` and packages remain
-`br.com.arch.toolkit.storage.*`. This candidate is not published until the release workflow completes.
+`br.com.arch.toolkit.storage.*`.
 
 ## Version selection
 
@@ -63,7 +63,7 @@ entry creation safe. Use consistent key types and synchronize access to the call
 
 The standalone `tools/release-consumer` build compiles against published RC16 without source-project
 substitution, writes primitives, enum names and JSON to a real DataStore file, then compiles against
-locally published `1.0.0` to read the same file and exercise adapters and delegates.
+`1.0.0` published to `build/release-repository` to read the same file and exercise adapters and delegates.
 RC16 requires an explicit `storage-core` dependency on the consumer's compile classpath;
 `1.0.0` exposes it transitively from both backends. Public JVM signatures are compared with
 `python tools/compare_release_api.py` after resolving RC16 and publishing locally; JDK `javap`

@@ -2,9 +2,8 @@
 
 ## Dependencies
 
-For candidate consumption, run `./gradlew ciPublishLocal -PreleaseVersion=1.0.0` and configure
-`mavenLocal()` in the consuming project's repositories. `1.0.0` is selected but not published yet.
-After publication, use Maven Central. Read the [RC migration guide](migration-1.0.0.md) for version conflicts.
+Use `mavenCentral()` in your repositories and add the backends you need.
+Read the [RC migration guide](migration-1.0.0.md) for version conflicts.
 
 ```kotlin
 kotlin {
