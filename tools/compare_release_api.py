@@ -44,6 +44,6 @@ def compare(cache, repository):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache", type=Path, default=Path.home() / ".gradle/caches/modules-2/files-2.1/io.github.matheus-corregiari")
-    parser.add_argument("--repository", type=Path, default=Path.home() / ".m2/repository/io/github/matheus-corregiari")
+    parser.add_argument("--repository", type=Path, default=Path("build/release-repository/io/github/matheus-corregiari"))
     args = parser.parse_args()
     compare(args.cache, args.repository)

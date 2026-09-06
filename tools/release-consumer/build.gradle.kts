@@ -5,7 +5,7 @@ plugins {
 
 repositories {
     exclusiveContent {
-        forRepository { mavenLocal() }
+        forRepository { maven { url = uri("../../build/release-repository") } }
         filter { includeVersionByRegex("io.github.matheus-corregiari", "storage-.*", "1\\.0\\.0") }
     }
     google()

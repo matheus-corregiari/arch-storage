@@ -18,9 +18,9 @@ plugins {
 extensions.configure(PublishingExtension::class) {
     repositories {
         maven {
-            val buildFile = project.rootProject.layout.buildDirectory.asFile
+            val repositoryDirectory = project.rootProject.layout.buildDirectory.dir("release-repository")
             name = "LocalPath"
-            url = uri(buildFile.get().absolutePath)
+            url = uri(repositoryDirectory.get().asFile)
         }
 
         maven {

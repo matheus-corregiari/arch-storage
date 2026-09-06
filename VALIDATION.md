@@ -87,3 +87,9 @@ Before merging/publishing, configure the release App and signing/Central secrets
 [CI and releases](docs/ci.md), enable Pages if documentation deployment is desired, and apply required
 branch checks. PR validation does not require publication secrets. This preparation does not create
 a tag, merge the PR, upload release artifacts remotely or enable hosting.
+
+Local repository follow-up: `ciPublishLocal` now uses the existing `LocalPath` repository at
+`build/release-repository`. All 21 publications and the JVM API comparison passed against this
+directory. A fresh RC16 fixture was read successfully by the 1.0.0 consumer using that repository.
+Signing dry-runs passed for all 21 tasks, both local-only and combined local/GitHub.
+The 20 Python tests and strict MkDocs validation also passed. Evidence: `build/project-path-*.log`.

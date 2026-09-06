@@ -94,7 +94,7 @@ complete list of Maven coordinates, without uploading packages.
 
 The explicit `-PreleaseVersion=...` takes precedence over `build/version-name.txt` (written by CI),
 then the version defaults to `0.0.0-SNAPSHOT`. No Git commands run during version lookup.
-`ciPublishLocal` writes to Maven Local and skips signing only when no remote publication is requested.
+`ciPublishLocal` uses the `LocalPath` repository at `build/release-repository` and skips signing only when no remote publication is requested.
 Combining local and remote tasks retains remote signing. Normal resolution uses Maven Local only
 with `-PuseMavenLocal=true`.
 All three modules must appear separately in `build/ci/publications.tsv`.
