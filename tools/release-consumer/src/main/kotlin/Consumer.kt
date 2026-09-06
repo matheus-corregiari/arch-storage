@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -30,21 +31,33 @@ fun main(args: Array<String>) = runBlocking {
     try {
         val provider = DataStoreProvider(PreferenceDataStoreFactory.create(scope = scope) { file })
         if (args[0] == "write") {
-            suspend fun <T> save(entry: KeyValue<T>, value: T) {
-                entry.set(value, scope)
-                withTimeout(10_000) { entry.get().first { it == value } }
+            suspend fun <T> save(name: String, entry: KeyValue<T>, value: T) {
+                println("Writing RC16 fixture entry: $name")
+                val writeJob = SupervisorJob(job)
+                try {
+                    entry.set(value, CoroutineScope(Dispatchers.IO + writeJob))
+                    // Only this write belongs to writeJob; DataStore's long-lived jobs use scope.
+                    withTimeout(60_000) { writeJob.children.toList().joinAll() }
+                    val actual = withTimeout(60_000) { entry.get().first() }
+                    val matches = if (value is ByteArray && actual is ByteArray) {
+                        value.contentEquals(actual)
+                    } else {
+                        actual == value
+                    }
+                    check(matches) { "RC16 fixture entry $name was not persisted: $actual" }
+                } finally {
+                    writeJob.cancelAndJoin()
+                }
             }
-            save(provider.boolean("enabled"), true)
-            save(provider.int("count"), 42)
-            save(provider.long("timestamp"), 123456789L)
-            save(provider.float("ratio"), 1.5f)
-            save(provider.double("amount"), 2.5)
-            save(provider.string("name"), "RC16")
-            save(provider.enum("theme", Theme.Light), Theme.Dark)
-            save(provider.model<List<Int>>("numbers"), listOf(1, 2, 3))
-            val bytes = provider.byteArray("bytes")
-            bytes.set(byteArrayOf(1, 2, 3), scope)
-            withTimeout(10_000) { bytes.get().first { it.contentEquals(byteArrayOf(1, 2, 3)) } }
+            save("enabled", provider.boolean("enabled"), true)
+            save("count", provider.int("count"), 42)
+            save("timestamp", provider.long("timestamp"), 123456789L)
+            save("ratio", provider.float("ratio"), 1.5f)
+            save("amount", provider.double("amount"), 2.5)
+            save("name", provider.string("name"), "RC16")
+            save("theme", provider.enum("theme", Theme.Light), Theme.Dark)
+            save("numbers", provider.model<List<Int>>("numbers"), listOf(1, 2, 3))
+            save("bytes", provider.byteArray("bytes"), byteArrayOf(1, 2, 3))
             println("RC16 persistence fixture written")
         } else {
             require(args[0] == "read")

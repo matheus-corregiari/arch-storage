@@ -64,9 +64,20 @@ standalone module reports. Inspect each module's `build/reports/kover/report.xml
 
 ## Hosted validation and release activation
 
-PR macOS simulator execution and real CodeQL scans are pending. Local iOS KLIB compilation is not
-simulator execution, and local compilation is not a CodeQL scan. The PR's Coverage Gate additionally
-runs local publication, metadata validation, the independent RC16 migration and public API comparison.
+[CI run 33995918752](https://github.com/matheus-corregiari/arch-storage/actions/runs/33995918752)
+passed the macOS build and coverage suite, including 38 iOS Simulator ARM64 tests with zero failures
+or skips. All three real CodeQL scans, CodeQL Policy, static analysis and documentation passed.
+The downloaded simulator XML reports are under `build/remote-ci-33995918752`.
+
+That run subsequently hit a 10-second timeout in the legacy RC16 fixture writer. The fixture harness
+now owns a separate job for each asynchronous write, joins it before checking the persisted value,
+and identifies every key in its output. The revised RC16 writer and 1.0.0 reader passed locally
+(`build/rc16-writer-second.log`, `build/consumer-second.log`). Current [PR checks](https://github.com/matheus-corregiari/arch-storage/pull/1/checks)
+remain the authority for the complete hosted artifact-validation result.
+
+The lifecycle and concurrent-writer regressions both fail against the original implementations in
+an isolated copy. Explicit `-PreleaseVersion=1.0.0` also produced all 21 candidate coordinates despite
+an isolated stale `build/version-name.txt` containing `9.9.9`. No production source was reverted.
 
 The GitHub Packages listing could not be checked locally: the CLI token lacks `read:packages` (HTTP 403).
 Recheck that destination with release credentials before publication.
