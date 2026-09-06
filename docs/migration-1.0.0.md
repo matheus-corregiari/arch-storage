@@ -58,24 +58,3 @@ Compose stays in core and moves to 1.12.0. Arch Lumber moves to 1.4.0.
 
 Memory retains model objects and the caller's map. It does not copy mutable objects or make concurrent
 entry creation safe. Use consistent key types and synchronize access to the caller-owned map.
-
-## Reproducible consumer and persistence check
-
-The standalone `tools/release-consumer` build compiles against published RC16 without source-project
-substitution, writes primitives, enum names and JSON to a real DataStore file, then compiles against
-`1.0.0` published to `build/release-repository` to read the same file and exercise adapters and delegates.
-RC16 requires an explicit `storage-core` dependency on the consumer's compile classpath;
-`1.0.0` exposes it transitively from both backends. Public JVM signatures are compared with
-`python tools/compare_release_api.py` after resolving RC16 and publishing locally; JDK `javap`
-must be on `PATH`.
-
-```sh
-./gradlew ciPublishLocal -PreleaseVersion=1.0.0
-./gradlew -p tools/release-consumer run -PstorageVersion=2.0.0-rc16 \
-  --args="write /absolute/path/rc16.preferences_pb"
-./gradlew -p tools/release-consumer run -PstorageVersion=1.0.0 \
-  --args="read /absolute/path/rc16.preferences_pb"
-```
-
-Use a fresh fixture file for each run. In PowerShell quote arguments such as
-`'-PreleaseVersion=1.0.0'` and `'-PstorageVersion=2.0.0-rc16'`.

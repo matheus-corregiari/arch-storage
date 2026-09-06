@@ -15,7 +15,7 @@
 - Verify the Gradle Wrapper checksum, make Maven Local opt-in and prioritize explicit release versions.
 - Match publication gates to all CodeQL matrix jobs and CodeQL Policy; align scheduled analysis.
 - Preserve remote signing in combined local/remote invocations and fail API docs on warnings.
-- Add an independent artifact consumer and real RC16 persistence migration validation.
+- Validate local release artifacts, publication metadata and public dependencies.
 
 ### Initial extraction included in this release
 

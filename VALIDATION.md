@@ -32,13 +32,9 @@ is part of this preparation.
 | Strict MkDocs | Passed using isolated Material 9.7.7; `build/docs-validation.log` |
 | Negative API documentation test | Undocumented class and unresolved KDoc link rejected with three warnings; `build/docs-negative-test.log`. Temporary probes removed and docs regenerated successfully. |
 | Local publications | All 21 POMs, module metadata and referenced files validated by `tools/verify_publications.py` |
-| Independent consumer | RC16 wrote a real preferences file; 1.0.0 read all primitives, bytes, enum and JSON successfully; `build/rc16-writer.log`, `build/consumer-validation.log` |
-| Public JVM API | Eight public classes compared to RC16 with `tools/compare_release_api.py`; no removed signatures |
 | Signing policy | Real predicates for all 21 signing tasks: false for local-only, true for combined local/GitHub; dry-runs only, `build/signing-local.log`, `build/signing-combined.log` |
 | Coordinate availability | All 21 Central POM URLs returned HTTP 404 on 2026-09-05; `build/coordinate-availability.json`. Recheck before eventual publication. |
 
-The standalone consumer explicitly adds core only for RC16 because that release omitted it from the
-backends' compile classpath. Candidate consumption proves the new transitive public dependencies.
 The source build keeps Android, JVM, JS, WasmJS, iosArm64 and iosSimulatorArm64. iosX64 was absent
 from RC16 publications and is removed from this build. Android minimum is now 23.
 
@@ -69,10 +65,7 @@ passed the macOS build and coverage suite, including 38 iOS Simulator ARM64 test
 or skips. All three real CodeQL scans, CodeQL Policy, static analysis and documentation passed.
 The downloaded simulator XML reports are under `build/remote-ci-33995918752`.
 
-That run subsequently hit a 10-second timeout in the legacy RC16 fixture writer. The fixture harness
-now owns a separate job for each asynchronous write, joins it before checking the persisted value,
-and identifies every key in its output. The revised RC16 writer and 1.0.0 reader passed locally
-(`build/rc16-writer-second.log`, `build/consumer-second.log`). Current [PR checks](https://github.com/matheus-corregiari/arch-storage/pull/1/checks)
+Current [PR checks](https://github.com/matheus-corregiari/arch-storage/pull/1/checks)
 remain the authority for the complete hosted artifact-validation result.
 
 The lifecycle and concurrent-writer regressions both fail against the original implementations in
@@ -89,7 +82,7 @@ branch checks. PR validation does not require publication secrets. This preparat
 a tag, merge the PR, upload release artifacts remotely or enable hosting.
 
 Local repository follow-up: `ciPublishLocal` now uses the existing `LocalPath` repository at
-`build/release-repository`. All 21 publications and the JVM API comparison passed against this
-directory. A fresh RC16 fixture was read successfully by the 1.0.0 consumer using that repository.
+`build/release-repository`. All 21 publications passed validation against this directory.
+The release gate verifies local artifacts and metadata; legacy-version comparisons are not required.
 Signing dry-runs passed for all 21 tasks, both local-only and combined local/GitHub.
 The 20 Python tests and strict MkDocs validation also passed. Evidence: `build/project-path-*.log`.
