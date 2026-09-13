@@ -69,3 +69,8 @@ Normal dependency resolution excludes Maven Local; enable it explicitly with `-P
 - [Local validation record](VALIDATION.md): checks, coverage and platform limits.
 
 Licensed under [Apache 2.0](LICENSE).
+
+## Next release: 1.0.1
+
+See [release notes](docs/changelog/1.0.1.md), [dependency versions](docs/dependencies.md) and
+[coverage configuration](docs/ci.md#coverage-and-codecov). This release is a candidate until tagged and published.
