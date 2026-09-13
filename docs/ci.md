@@ -106,7 +106,7 @@ reusing a published version. The no-tag policy's initial `1.0.0` is not a Maven 
 
 ## Coverage and Codecov
 
-`build-logic/src/main/kotlin/arch-ci.gradle.kts` is the single source of report exclusions. It applies the same Kover filter
+`build-logic/src/main/kotlin/arch-coverage.gradle.kts` is the single source of report exclusions. It applies the same Kover filter
 to every covered module and the root report. Only Android-generated `*.BuildConfig`, `*.R`
 and `*.R$*` are excluded: they contain generated constants/resources, not application behavior.
 Do not exclude DTOs, state classes, Compose functions or entire packages just to raise coverage.
@@ -134,3 +134,10 @@ verifies the reports. Other CI gates run independently; all must pass before a r
 References: [Kover report filtering](https://kotlin.github.io/kotlinx-kover/gradle-plugin/#filtering-reports),
 [Codecov file search](https://docs.codecov.com/docs/file-search) and
 [Codecov path ignores](https://docs.codecov.com/docs/ignoring-paths).
+
+Release notes come from `docs/changelog/<version>.md` in the verified tag checkout.
+The GitHub Release uses this same page, with generated notes as a fallback for historical tags without it.
+
+Keep `kotlin-js-store/yarn.lock` versioned: it locks the npm dependency tree used by Kotlin/JS builds.
+Update it through Gradle when dependencies change, rather than editing it manually.
+See [Kotlin/JS version locking](https://kotlinlang.org/docs/js-project-setup.html#version-locking-via-kotlin-js-store).

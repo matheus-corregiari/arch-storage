@@ -72,5 +72,5 @@ Licensed under [Apache 2.0](LICENSE).
 
 ## Next release: 1.0.1
 
-See [release notes](RELEASE_NOTES.md), [dependency versions](docs/dependencies.md) and
+See [release notes](docs/changelog/1.0.1.md), [dependency versions](docs/dependencies.md) and
 [coverage configuration](docs/ci.md#coverage-and-codecov). This release is a candidate until tagged and published.
