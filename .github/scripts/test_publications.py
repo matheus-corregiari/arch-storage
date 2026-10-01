@@ -16,6 +16,12 @@ class PublicationManifestTest(unittest.TestCase):
     def test_accepts_exact_release_publications(self):
         self.assertEqual(21, len(validate_manifest("\n".join(self.rows))))
 
+    def test_accepts_hotfix_publications(self):
+        manifest = "\n".join(self.rows).replace("1.0.0", "1.0.1")
+        self.assertEqual(21, len(validate_manifest(manifest, "1.0.1")))
+        with self.assertRaises(ValueError):
+            validate_manifest(manifest, "1.0.2")
+
     def test_rejects_missing_duplicate_extra_wrong_version_and_wrong_group(self):
         cases = [self.rows[:-1], self.rows[:-1] + [self.rows[0]],
                  self.rows + [f"{GROUP}\tstorage-core-iosx64\t1.0.0"],

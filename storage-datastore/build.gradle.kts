@@ -8,7 +8,11 @@ plugins {
 
 kotlin {
     android {
-        compileSdk = versionInt(libs.versions.build.sdk.compile)
+        compileSdk {
+            version = release(versionInt(libs.versions.build.sdk.compile)) {
+                minorApiLevel = versionInt(libs.versions.build.sdk.minor)
+            }
+        }
         minSdk = versionInt(libs.versions.build.sdk.min)
         buildToolsVersion = versionString(libs.versions.build.tools)
     }
@@ -20,7 +24,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":storage-core"))
         }
-        val opMain by creating {
+        val opMain = create("opMain") {
             dependsOn(commonMain.get())
             dependencies {
                 api(libs.androidx.datastore.core)
@@ -28,12 +32,12 @@ kotlin {
                 implementation(libs.arch.lumber)
             }
         }
-        val noopMain by creating { dependsOn(commonMain.get()) }
+        val noopMain = create("noopMain") { dependsOn(commonMain.get()) }
         androidMain { dependsOn(opMain) }
         jvmMain { dependsOn(opMain) }
         appleMain { dependsOn(opMain) }
         webMain { dependsOn(noopMain) }
-        val opTest by creating { dependsOn(commonTest.get()) }
+        val opTest = create("opTest") { dependsOn(commonTest.get()) }
         jvmTest { dependsOn(opTest) }
         appleTest { dependsOn(opTest) }
         named("androidHostTest") { dependsOn(opTest) }

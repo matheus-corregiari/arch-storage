@@ -42,6 +42,10 @@ nav:
       - Core: api/storage-core/index.html
       - Memory: api/storage-memory/index.html
       - DataStore: api/storage-datastore/index.html
-  - Changelog: changelog/index.md
+  - Changelog:
+      - Overview: changelog/index.md
+      - "1.0.1": changelog/1.0.1.md
+      - "1.0.0": changelog/1.0.0.md
+  - Dependencies: dependencies.md
   - CI and Releases: ci.md
   - Contributing: contributing.md

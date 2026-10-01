@@ -19,9 +19,9 @@ def validate_manifest(text, version="1.0.0"):
     return rows
 
 
-def verify(repository, manifest):
+def verify(repository, manifest, version="1.0.0"):
     ns = {"m": "http://maven.apache.org/POM/4.0.0"}
-    for group, artifact, version in validate_manifest(manifest.read_text()):
+    for group, artifact, version in validate_manifest(manifest.read_text(), version):
         directory = repository / group.replace(".", "/") / artifact / version
         stem = directory / f"{artifact}-{version}"
         pom = ET.parse(str(stem) + ".pom").getroot()
@@ -54,5 +54,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository", type=Path, default=Path("build/release-repository"))
     parser.add_argument("--manifest", type=Path, default=Path("build/ci/publications.tsv"))
+    parser.add_argument("--version", default="1.0.0")
     args = parser.parse_args()
-    verify(args.repository, args.manifest)
+    verify(args.repository, args.manifest, args.version)

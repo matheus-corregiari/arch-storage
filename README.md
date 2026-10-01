@@ -39,7 +39,7 @@ Memory values do not survive process termination.
 
 ## Build and quality
 
-Use JDK 21, the checked-in Gradle Wrapper, and Android SDK 37/build tools 37.0.0.
+Use JDK 21, the checked-in Gradle Wrapper, and Android SDK 37.2/build tools 37.0.0.
 Set `ANDROID_HOME` to your SDK installation. The minimum Android API is 23.
 Browser tests require Chrome; Apple compilation and simulator tests require macOS and Xcode.
 
@@ -69,3 +69,8 @@ Normal dependency resolution excludes Maven Local; enable it explicitly with `-P
 - [Local validation record](VALIDATION.md): checks, coverage and platform limits.
 
 Licensed under [Apache 2.0](LICENSE).
+
+## Next release: 1.0.1
+
+See [release notes](docs/changelog/1.0.1.md), [dependency versions](docs/dependencies.md) and
+[coverage configuration](docs/ci.md#coverage-and-codecov). This release is a candidate until tagged and published.
