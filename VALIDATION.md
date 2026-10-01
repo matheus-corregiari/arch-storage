@@ -1,3 +1,22 @@
+# Hotfix 1.0.1 validation
+
+Local checks run on Windows, 2026-10-01:
+
+- `ciBuild ciCoverage ciLint ciDocs ciPublishLocal ciPublicationManifest -PreleaseVersion=1.0.1`: passed (`build/refresh-validation.log`).
+- JVM: 40 tests; Android host: 39; JavaScript: 29; WasmJS: 29. All 137 executions passed.
+- Aggregate coverage: 95.60% lines, 92.75% instructions, 90.32% branches. Existing module and aggregate thresholds passed.
+- All 21 local candidate publications passed POM, metadata, referenced-file and public-dependency validation (`build/refresh-publications.log`).
+- Release/recovery and publication-manifest regression suite: 26 tests passed.
+- Strict MkDocs Material 9.7.7 and actionlint 1.7.12 passed.
+- Gradle wrapper refreshed to 9.8.0 with its official distribution checksum.
+- Maven Central returned HTTP 404 for all 21 candidate coordinates; GitHub has no `1.0.1` tag. Release secrets are configured. Secret values and validity are not inspected.
+
+Android consumers must compile against API 37.2 or later, required by Lumber 1.4.4. Minimum Android API remains 23.
+Apple linking and simulator execution require the PR's macOS CI. Current PR checks are the authority for hosted validation.
+This preparation leaves PR #2 open and does not merge, tag or publish the release.
+
+---
+
 # Release 1.0.0 validation
 
 Local checks run on Windows, 2026-09-05. This document distinguishes executable local evidence

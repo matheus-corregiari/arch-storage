@@ -39,7 +39,7 @@ Memory values do not survive process termination.
 
 ## Build and quality
 
-Use JDK 21, the checked-in Gradle Wrapper, and Android SDK 37/build tools 37.0.0.
+Use JDK 21, the checked-in Gradle Wrapper, and Android SDK 37.2/build tools 37.0.0.
 Set `ANDROID_HOME` to your SDK installation. The minimum Android API is 23.
 Browser tests require Chrome; Apple compilation and simulator tests require macOS and Xcode.
 

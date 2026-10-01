@@ -68,7 +68,7 @@ recover a publication failure.
 
 Use the Release workflow's manual dispatch with the existing tag and destination `central`, `github`,
 `both`, or `release-only`. Skipped destinations must already contain every publication's POM; the
-workflow verifies this before proceeding and checks both registries before creating the GitHub Release.
+workflow verifies this before proceeding. The GitHub Release follows successful publication tasks.
 If Central is still processing a deployment, wait for that deployment rather than uploading it again.
 Selecting `both` is only appropriate when neither destination has accepted the release.
 
@@ -141,3 +141,8 @@ The GitHub Release uses this same page, with generated notes as a fallback for h
 Keep `kotlin-js-store/yarn.lock` versioned: it locks the npm dependency tree used by Kotlin/JS builds.
 Update it through Gradle when dependencies change, rather than editing it manually.
 See [Kotlin/JS version locking](https://kotlinlang.org/docs/js-project-setup.html#version-locking-via-kotlin-js-store).
+
+Normal releases create the GitHub Release after Central and GitHub publication tasks succeed.
+Central deployment validation remains required; public artifact availability can follow later.
+Manual recovery verifies every coordinate in destinations omitted from the selected recovery mode.
+CI validates all 21 local candidate publications using the version from the release or hotfix branch.
