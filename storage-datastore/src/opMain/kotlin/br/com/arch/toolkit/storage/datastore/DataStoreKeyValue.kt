@@ -42,8 +42,9 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
  * - **Read:** Values are exposed as a [Flow] via [get]. Null if the key is not set.
  * - **Write:** Updates are performed inside [DataStore.edit], replacing or removing the key.
  * - **Cache:** The last successfully read or written value is stored in [lastValue].
- * - **Concurrency:** The latest pending write wins per entry instance (previous is cancelled).
- * - **Errors:** Failures are logged via [Lumber].
+ * - **Concurrency:** [set] cancels its previous pending write per entry instance.
+ *   [setAndAwait] writes independently in the caller's coroutine.
+ * - **Errors:** [set] logs ordinary failures via [Lumber]; [setAndAwait] propagates failures.
  *
  * ---
  *
@@ -103,10 +104,7 @@ internal sealed class DataStoreKeyValue<Result>(
     override fun set(value: Result?, scope: CoroutineScope) {
         val next = scope.launch(start = CoroutineStart.LAZY) {
             runCatching {
-                store.edit { pref ->
-                    if (value == null) pref.remove(key) else pref[key] = value
-                }
-                lastValue = value
+                setAndAwait(value)
             }.onFailure { failure ->
                 if (failure is CancellationException) throw failure
                 Lumber.tag("DataStore - set").error(failure)
@@ -114,6 +112,13 @@ internal sealed class DataStoreKeyValue<Result>(
         }
         job.exchange(next).cancel()
         next.start()
+    }
+
+    override suspend fun setAndAwait(value: Result?) {
+        store.edit { pref ->
+            if (value == null) pref.remove(key) else pref[key] = value
+        }
+        lastValue = value
     }
 
     internal class BooleanKV(key: String, store: DataStore<Preferences>) :

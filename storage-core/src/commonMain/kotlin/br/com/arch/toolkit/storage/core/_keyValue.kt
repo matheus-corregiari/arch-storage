@@ -21,10 +21,10 @@ import kotlin.reflect.KProperty
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * Returns the current value of this [KeyValue] immediately.
+ * Returns a convenience value using platform-specific synchronous access.
  *
- * This is a platform-specific, blocking shortcut to fetch the most recent value
- * without collecting the [Flow]. It should be used in cases where synchronous
+ * On JVM, Android and Apple this blocks using [KeyValue.current], which may return cache.
+ * On JS and Wasm it returns cache without observing the backend. Use it when synchronous
  * access is required (e.g., property delegates, initialization).
  *
  * ---
@@ -141,6 +141,21 @@ abstract class KeyValue<DATA> {
 
     /** Writes a value using [scope]. Persistent implementations may complete asynchronously. */
     abstract fun set(value: DATA, scope: CoroutineScope = this.scope)
+
+    /**
+     * Writes in the caller's coroutine and waits for backend completion.
+     * Conversion and backend failures, including cancellation, propagate to the caller.
+     * Memory completion means an in-memory update; persistent guarantees depend on the backend.
+     * Completion does not wait for collectors or prevent later writes from replacing the value.
+     * Cancellation may race with backend completion and does not prove rollback.
+     * This operation is independent of the scope and pending-write replacement used by [set].
+     *
+     * Custom backends must override this method to support acknowledged writes. The default
+     * throws [UnsupportedOperationException] without calling [set], preserving existing subclasses
+     * without claiming completion for their potentially asynchronous writes.
+     */
+    open suspend fun setAndAwait(value: DATA): Unit =
+        throw UnsupportedOperationException("This KeyValue does not support acknowledged writes")
 
     /** Sets the default write scope and returns this entry. */
     fun scope(scope: CoroutineScope) = apply { this.scope = scope }
