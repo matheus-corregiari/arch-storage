@@ -32,6 +32,25 @@ fun saveProfile(provider: StorageProvider, scope: CoroutineScope) {
 Use the same entry and `set(null, scope)` to remove the model. DataStore serialization callbacks
 run as part of mapping; invalid persisted JSON is an observable read error.
 
+## Await a write and observe a value
+
+```kotlin
+import br.com.arch.toolkit.storage.core.StorageProvider
+import kotlinx.coroutines.flow.first
+
+suspend fun saveName(provider: StorageProvider, name: String) {
+    provider.string("name").setAndAwait(name)
+    // Backend completion reached; conversion/backend failures propagate to the caller.
+}
+
+suspend fun observeNameOnce(provider: StorageProvider): String? =
+    provider.string("name").get().first()
+```
+
+Successful completion follows the backend contract. Memory is ephemeral; DataStore awaits the edit.
+Observation waits for an emission and propagates read errors; it does not fall back to `lastValue`.
+A later concurrent write may change the observed value. Add a caller timeout if necessary.
+
 ## Bind to Compose
 
 ```kotlin

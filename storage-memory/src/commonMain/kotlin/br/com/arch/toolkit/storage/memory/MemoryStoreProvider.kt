@@ -6,6 +6,8 @@ import br.com.arch.toolkit.storage.core.KeyValue
 import br.com.arch.toolkit.storage.core.KeyValue.Companion.required
 import br.com.arch.toolkit.storage.core.StorageProvider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -131,6 +133,12 @@ class MemoryStoreProvider(
 
         /** Observes the shared state for this key. */
         override fun get(): Flow<T?> = flow.asStateFlow()
+
+        /** Updates memory in the caller's coroutine; cancellation is checked before mutation. */
+        override suspend fun setAndAwait(value: T?) {
+            currentCoroutineContext().ensureActive()
+            flow.value = value
+        }
 
         /** Updates memory immediately; no asynchronous work is scheduled. */
         override fun set(value: T?, scope: CoroutineScope) {

@@ -1,6 +1,8 @@
 package br.com.arch.toolkit.storage.memory
 
 import br.com.arch.toolkit.storage.core.KeyValue
+import br.com.arch.toolkit.storage.core.KeyValue.Companion.default
+import br.com.arch.toolkit.storage.core.KeyValue.Companion.map
 import br.com.arch.toolkit.storage.core.KeyValue.Companion.required
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -106,6 +108,47 @@ class MemoryStoreProviderTest {
         holder.count = 3
         assertEquals(3, entry.get().first())
         assertEquals(3, holder.count)
+    }
+
+    @Test
+    fun acknowledgedWritesForwardThroughAdaptersAndAreObserved() = runTest {
+        val provider = MemoryStoreProvider(mutableMapOf())
+        val source = provider.string("count")
+        val entry = source.default("0").required().map(String::toInt, Int::toString)
+        val observed = mutableListOf<String?>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            provider.string("count").get().take(3).toList(observed)
+        }
+        entry.setAndAwait(7)
+        assertEquals("7", source.lastValue)
+        source.setAndAwait(null)
+        assertEquals(listOf(null, "7", null), observed)
+        val invalid = source.map({ it }, { _: String? -> error("encode failed") })
+        kotlin.test.assertFailsWith<IllegalStateException> { invalid.setAndAwait("8") }
+        assertNull(source.lastValue)
+    }
+
+    @Test
+    fun acknowledgedWriteChecksCallerCancellationBeforeMutation() = runTest {
+        val entry = MemoryStoreProvider(mutableMapOf()).int("count")
+        val job = kotlinx.coroutines.Job().apply { cancel() }
+        kotlin.test.assertFailsWith<kotlinx.coroutines.CancellationException> {
+            kotlinx.coroutines.withContext(job) { entry.setAndAwait(7) }
+        }
+        assertNull(entry.lastValue)
+    }
+
+    @Test
+    fun requiredAcknowledgedWritesRejectExplicitlyNullableTypeArgument() = runTest {
+        val source = MemoryStoreProvider(mutableMapOf()).string("name")
+        val entries = listOf(source.required<String?>(), source.required<String?> { "fallback" })
+        for (entry in entries) {
+            source.setAndAwait("saved")
+            kotlin.test.assertFailsWith<IllegalStateException> { entry.setAndAwait(null) }
+            assertEquals("saved", source.get().first())
+            entry.setAndAwait("updated")
+            assertEquals("updated", source.get().first())
+        }
     }
 
     private suspend fun <T> checkEntry(entry: KeyValue<T?>, value: T, scope: CoroutineScope) {

@@ -72,5 +72,9 @@ internal class RequiredKeyValue<ResultData> internal constructor(
 
     override fun set(value: ResultData, scope: CoroutineScope) = keyValue.set(value, scope)
 
+    override suspend fun setAndAwait(value: ResultData) = keyValue.setAndAwait(
+        value ?: error("Required KeyValue cannot have a null value")
+    )
+
     private fun <R> (() -> R).invokeCatching() = catchingStorageFailure { invoke() }.getOrNull()
 }

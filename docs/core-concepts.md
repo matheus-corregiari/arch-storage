@@ -4,12 +4,14 @@
 
 `StorageProvider` creates entries for Boolean, ByteArray, Double, Float, Int, Long and String,
 plus enum and model helpers. `KeyValue<T>` exposes `get(): Flow<T>`, `set(value, scope)`,
-`lastValue`, `current()`, `instant()`, property delegates and Compose state.
+`setAndAwait(value)`, `lastValue`, `current()`, `instant()`, property delegates and Compose state.
 
 | Operation | Semantics |
 |---|---|
 | `get()` | Observe the backend; absent primitive keys emit null |
 | `set(value, scope)` | Memory updates immediately; DataStore schedules an asynchronous write |
+| `setAndAwait(value)` | Suspends until backend completion; conversion/backend errors and cancellation propagate |
+| `get().first()` | Waits for an observed emission, including null; read errors propagate without cache fallback |
 | `set(null, scope)` | Clears a nullable entry; DataStore removes the preference |
 | `lastValue` | Cached value; a new DataStore entry starts at null until read or written |
 | `current()` | Attempts a Flow read for 50 ms, falling back to the cached value on timeout/error |
@@ -20,6 +22,22 @@ reads on UI threads. Use a caller-owned scope and Flow for lifecycle-sensitive w
 Cancellation propagates. A valid null emission replaces stale cache; only an absent emission,
 ordinary failure or timeout uses the fallback. The timeout is cooperative and cannot interrupt
 blocking synchronous code.
+For acknowledged writes, use `entry.setAndAwait(value)` inside your coroutine. Memory updates
+shared state; DataStore waits for `edit` to return after persistence, following the
+[AndroidX DataStore contract](https://developer.android.com/reference/kotlin/androidx/datastore/core/DataStore). This is not a guarantee against
+hardware failure, a transaction across entries, or proof that collectors have processed the update.
+Cancellation can race with backend completion: a cancelled call does not prove the write was rolled
+back. Other writers may replace the value before the next read. `lastValue` is a cache, not a receipt.
+
+Use `entry.get().first()` (import `kotlinx.coroutines.flow.first`) when you need an observed value
+without the 50 ms fallback. It can suspend indefinitely; add your own timeout when needed. An observed
+value is not necessarily the latest concurrent write. Defaults and mappings also apply to observations.
+
+`setAndAwait` runs in the caller's context, independently of the scope/pending job used by `set`.
+It neither cancels nor is cancelled by the legacy latest-pending-write policy. Avoid mixing concurrent
+writes when order matters; await sequential calls. Custom `KeyValue` backends must override
+`setAndAwait`; its default throws `UnsupportedOperationException` without scheduling a write.
+
 DataStore cancels the previous pending write on the same entry when another write is submitted;
 do not use repeated `set` calls as an atomic increment or transaction API.
 
@@ -46,7 +64,8 @@ timeout. `KeyValue<Int>.set(null)` does not compile.
 
 `entry.map(mapTo, mapBack)` converts values on read and write. A mapped null is forwarded to
 the backend, allowing nullable models to be deleted. Read conversion failures propagate through
-Flow; write conversion failures leave the source unchanged. Defaults are useful for missing values,
+Flow; write conversion failures leave the source unchanged. `set` discards ordinary conversion errors;
+`setAndAwait` propagates them to its caller. Cancellation propagates in both APIs. Defaults are useful for missing values,
 but do not automatically recover malformed JSON or arbitrary conversion errors.
 
 ## Serialization

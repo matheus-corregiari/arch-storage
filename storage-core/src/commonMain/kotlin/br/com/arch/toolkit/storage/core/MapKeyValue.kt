@@ -61,5 +61,7 @@ internal class MapKeyValue<Current, Transformed> internal constructor(
         mapBack.invokeCatching(value).onSuccess { keyValue.set(it, scope) }
     }
 
+    override suspend fun setAndAwait(value: Transformed) = keyValue.setAndAwait(mapBack(value))
+
     private fun <T, R> ((T) -> R).invokeCatching(data: T) = catchingStorageFailure { invoke(data) }
 }

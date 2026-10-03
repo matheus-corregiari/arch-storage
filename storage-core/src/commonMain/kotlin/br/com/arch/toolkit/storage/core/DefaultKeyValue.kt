@@ -17,5 +17,7 @@ internal class DefaultKeyValue<ResultData> internal constructor(
 
     override fun set(value: ResultData?, scope: CoroutineScope) = keyValue.set(value, scope)
 
+    override suspend fun setAndAwait(value: ResultData?) = keyValue.setAndAwait(value)
+
     private fun <R> (() -> R).invokeCatching() = catchingStorageFailure { invoke() }.getOrNull()
 }

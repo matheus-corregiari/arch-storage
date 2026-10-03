@@ -5,12 +5,14 @@ import br.com.arch.toolkit.storage.core.KeyValue.Companion.map
 import br.com.arch.toolkit.storage.core.KeyValue.Companion.required
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -157,6 +159,71 @@ class KeyValueTest {
         val mapped = Entry("invalid").map(String::toInt, Int::toString)
         assertFailsWith<NumberFormatException> { mapped.lastValue }
         assertFailsWith<NumberFormatException> { mapped.get().first() }
+    }
+
+    @Test
+    fun existingCustomBackendRejectsAcknowledgementWithoutSchedulingWrite() = runTest {
+        val entry = Entry(1)
+        assertFailsWith<UnsupportedOperationException> { entry.setAndAwait(2) }
+        assertEquals(1, entry.lastValue)
+    }
+
+    @Test
+    fun explicitObservationWaitsBeyondConvenienceTimeoutAndPropagatesErrors() = runTest {
+        val entry = Entry(
+            7,
+            flow {
+                kotlinx.coroutines.delay(100)
+                emit(9)
+            }
+        )
+        assertEquals(7, entry.current())
+        assertEquals(9, entry.get().first())
+        assertEquals(7, entry.lastValue)
+        assertFailsWith<IllegalStateException> { Entry(7, flow { error("read") }).get().first() }
+    }
+
+    @Test
+    fun acknowledgedAdapterChainWaitsAndPropagatesBackendAndConversionFailures() = runTest {
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        var failure: Exception? = null
+        val values = MutableStateFlow<String?>(null)
+        val source = object : KeyValue<String?>() {
+            override var lastValue: String?
+                get() = values.value
+                set(value) {
+                    values.value = value
+                }
+            override fun get(): Flow<String?> = values
+            override fun set(value: String?, scope: CoroutineScope) {
+                error("Unexpected legacy write")
+            }
+            override suspend fun setAndAwait(value: String?) {
+                gate.await()
+                failure?.let { throw it }
+                lastValue = value
+            }
+        }
+        val entry = source.default("0").required().map(String::toInt, Int::toString)
+        val write = async { entry.setAndAwait(7) }
+        runCurrent()
+        kotlin.test.assertFalse(write.isCompleted)
+        assertNull(source.lastValue)
+        gate.complete(Unit)
+        write.await()
+        assertEquals(7, entry.get().first())
+        failure = IllegalStateException("write failed")
+        assertSame(failure, assertFailsWith<IllegalStateException> { entry.setAndAwait(8) })
+        failure = CancellationException("write cancelled")
+        assertSame(failure, assertFailsWith<CancellationException> { entry.setAndAwait(8) })
+        val mapped = source.map({ it }, { _: String? -> error("map failed") })
+        assertFailsWith<IllegalStateException> { mapped.setAndAwait("8") }
+        val cancelled = source.map(
+            { it },
+            { _: String? -> throw CancellationException("map") }
+        )
+        assertFailsWith<CancellationException> { cancelled.setAndAwait("8") }
+        assertEquals("7", source.lastValue)
     }
 
     private class Entry<T>(initial: T, private val source: Flow<T>? = null) : KeyValue<T>() {

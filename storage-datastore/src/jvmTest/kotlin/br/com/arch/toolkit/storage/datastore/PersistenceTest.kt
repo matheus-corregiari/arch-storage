@@ -8,7 +8,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,8 +26,7 @@ class PersistenceTest {
                 )
             ) { file }
             val entry = DataStoreProvider(writer).string("name")
-            entry.set("persisted", CoroutineScope(Dispatchers.IO + writerJob))
-            withTimeout(10_000) { entry.get().first { it == "persisted" } }
+            entry.setAndAwait("persisted")
             writerJob.cancelAndJoin()
             val reader = PreferenceDataStoreFactory.create(
                 scope = CoroutineScope(

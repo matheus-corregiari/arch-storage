@@ -33,8 +33,9 @@ visits.set(1)
 // visits.get().collect { count -> println(count) }
 ```
 
-Memory writes are immediate. DataStore writes are asynchronous; observe `get()` to await a
-persisted value. `current()` uses a short timeout and can return the cached value instead.
+Memory `set` updates immediately; DataStore `set` schedules an asynchronous write. In a coroutine,
+use `setAndAwait(value)` to await backend completion and receive conversion/backend errors.
+`get().first()` awaits an observed value; `current()` uses a short timeout and can return cache.
 Memory values do not survive process termination.
 
 ## Build and quality
@@ -70,7 +71,7 @@ Normal dependency resolution excludes Maven Local; enable it explicitly with `-P
 
 Licensed under [Apache 2.0](LICENSE).
 
-## Next release: 1.0.1
+## Next release: 1.1.0
 
-See [release notes](docs/changelog/1.0.1.md), [dependency versions](docs/dependencies.md) and
+See [release notes](docs/changelog/1.1.0.md), [dependency versions](docs/dependencies.md) and
 [coverage configuration](docs/ci.md#coverage-and-codecov). This release is a candidate until tagged and published.

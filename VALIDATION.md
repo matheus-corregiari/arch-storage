@@ -1,3 +1,36 @@
+# Release 1.1.0 validation
+
+Local checks run on Windows, 2026-10-02:
+
+- `ciBuild ciCoverage ciLint ciDocs ciPublishLocal ciPublicationManifest -PreleaseVersion=1.1.0 --max-workers=2`: passed (`build/release-1.1.0-validation.log`).
+- JVM: 49 tests; Android host: 48; JavaScript: 34; WasmJS: 34. All 165 executions passed without failures or skips.
+- Aggregate coverage: 95.78% lines, 93.09% instructions, 90.62% branches. All module and aggregate gates passed; no new exclusions, baselines or suppressions.
+- All 21 local candidate publications passed metadata, POM and referenced-file validation (`build/release-1.1.0-publications.log`).
+- Release/publication Python regression suite: 26 tests passed. Strict MkDocs passed (`build/release-1.1.0-mkdocs.log`).
+- Local JVM/Android Kotlin incremental snapshots failed after the public API addition. Targeted nonincremental recompilation recovered them (`build/release-1.1.0-jvm-rebuild.log`, `build/release-1.1.0-host-rebuild.log`). The final normal gate passed without an incremental override or repository configuration change.
+
+Contract tests cover waiting for backend completion, adapter conversion/backend errors, cancellation,
+cache updates, independent legacy pending jobs, observation through a separate entry, and actual
+DataStore file persistence after store recreation. Existing `set` behavior remains covered.
+`current()` retains its compatibility fallback; explicit Flow observation is tested without that fallback.
+
+Apple sources were compiled, but framework linking and simulator execution were skipped on Windows.
+The existing macOS PR CI must validate Apple execution. DataStore remains unsupported on JS/Wasm;
+web tests exercise core/memory contracts and the unsupported DataStore factory, not a persistent web backend.
+The existing CI hierarchy runs shared operational tests on JVM, Android host and Apple without a workflow change.
+
+This prepares release/1.1.0 for an open PR to master; no merge, tag or remote artifact publication is performed.
+
+## Review follow-up (2026-10-03)
+
+- Reproduced `required<String?>().setAndAwait(null)` failing to reject null before the fix (`build/review-null-negative.log`).
+- Added the existing runtime null check before forwarding acknowledged writes. The regression covers required entries with and without fallback, preserving the previous stored value and accepting subsequent valid writes.
+- `ciCoverage ciLint ciDocs -PreleaseVersion=1.1.0 --max-workers=2` passed (`build/review-null-validation.log`). All 169 local executions passed: JVM 50, Android host 49, JS 35, WasmJS 35.
+- Aggregate coverage: 95.81% lines, 93.14% instructions, 90.91% branches; all existing coverage gates passed.
+- Apple source compilation passed locally; simulator execution for this follow-up remains subject to the new PR CI run.
+
+---
+
 # Hotfix 1.0.1 validation
 
 Local checks run on Windows, 2026-10-01:

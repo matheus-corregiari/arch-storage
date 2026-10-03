@@ -44,6 +44,7 @@ nav:
       - DataStore: api/storage-datastore/index.html
   - Changelog:
       - Overview: changelog/index.md
+      - "1.1.0": changelog/1.1.0.md
       - "1.0.1": changelog/1.0.1.md
       - "1.0.0": changelog/1.0.0.md
   - Dependencies: dependencies.md
