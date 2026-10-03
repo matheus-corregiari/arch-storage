@@ -21,6 +21,14 @@ The existing CI hierarchy runs shared operational tests on JVM, Android host and
 
 This prepares release/1.1.0 for an open PR to master; no merge, tag or remote artifact publication is performed.
 
+## Review follow-up (2026-10-03)
+
+- Reproduced `required<String?>().setAndAwait(null)` failing to reject null before the fix (`build/review-null-negative.log`).
+- Added the existing runtime null check before forwarding acknowledged writes. The regression covers required entries with and without fallback, preserving the previous stored value and accepting subsequent valid writes.
+- `ciCoverage ciLint ciDocs -PreleaseVersion=1.1.0 --max-workers=2` passed (`build/review-null-validation.log`). All 169 local executions passed: JVM 50, Android host 49, JS 35, WasmJS 35.
+- Aggregate coverage: 95.81% lines, 93.14% instructions, 90.91% branches; all existing coverage gates passed.
+- Apple source compilation passed locally; simulator execution for this follow-up remains subject to the new PR CI run.
+
 ---
 
 # Hotfix 1.0.1 validation

@@ -138,6 +138,19 @@ class MemoryStoreProviderTest {
         assertNull(entry.lastValue)
     }
 
+    @Test
+    fun requiredAcknowledgedWritesRejectExplicitlyNullableTypeArgument() = runTest {
+        val source = MemoryStoreProvider(mutableMapOf()).string("name")
+        val entries = listOf(source.required<String?>(), source.required<String?> { "fallback" })
+        for (entry in entries) {
+            source.setAndAwait("saved")
+            kotlin.test.assertFailsWith<IllegalStateException> { entry.setAndAwait(null) }
+            assertEquals("saved", source.get().first())
+            entry.setAndAwait("updated")
+            assertEquals("updated", source.get().first())
+        }
+    }
+
     private suspend fun <T> checkEntry(entry: KeyValue<T?>, value: T, scope: CoroutineScope) {
         assertNull(entry.get().first())
         entry.set(value, scope)
